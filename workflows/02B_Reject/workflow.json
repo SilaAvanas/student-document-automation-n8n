@@ -1,0 +1,835 @@
+{
+  "name": "02B_Reject",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "reject",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bfb1fe36-b4bc-4288-9bb0-b2d99f8795fa",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e9df92b-eb50-445e-806b-fb3c2af4dbd5",
+              "name": "token",
+              "value": "={{$json.query.token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "16a76f6e-bf06-4ac7-8efd-bde217162f66",
+      "name": "Reject - Input Hazırla"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "approvalToken",
+              "lookupValue": "={{$json.token}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ac1d02c3-fcc1-4d7d-abbf-227ae6c01de3",
+      "name": "Reject - Log Kaydını Bul"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6cdc8be4-5bf2-4a1a-a9cf-9e13e8247476",
+              "leftValue": "={{ !!$json.requestId && String($json.approvalStatus || '').toUpperCase() !== 'APPROVED' && String($json.approvalStatus || '').toUpperCase() !== 'REJECTED' && String($json.isTokenUsed || false).toLowerCase() !== 'true' && new Date($json.tokenExpiresAt).getTime() >= Date.now() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        0
+      ],
+      "id": "264bf0e2-0809-43dc-988f-dc4403c7c184",
+      "name": "Reject - Geçerli mi?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6c3d1d3-bb3a-4e93-aae6-bb0d79c77427",
+              "name": "approvalStatus",
+              "value": "REJECTED",
+              "type": "string"
+            },
+            {
+              "id": "285ab6ea-f575-4d40-b3b4-6ab04506865d",
+              "name": "status",
+              "value": "COMPLETED",
+              "type": "string"
+            },
+            {
+              "id": "f2409c81-7fe6-4ba0-8e68-60ef21a034d6",
+              "name": "approvalAt",
+              "value": "={{new Date().toISOString()}}",
+              "type": "string"
+            },
+            {
+              "id": "fe4e6963-a880-4f45-9a91-b6ea88918922",
+              "name": "tokenUsedAt",
+              "value": "={{new Date().toISOString()}}",
+              "type": "string"
+            },
+            {
+              "id": "a4b843db-ddc5-42ce-9d07-36b606ffca86",
+              "name": "isTokenUsed",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "c832f5b0-1186-48cb-aa6e-495263a4400a",
+              "name": "documentStatus",
+              "value": "NOT_CREATED",
+              "type": "string"
+            },
+            {
+              "id": "f6bc525c-e52c-4936-95a6-84262f5c9265",
+              "name": "rejectReason",
+              "value": "\"Talep personel tarafından reddedildi\"",
+              "type": "string"
+            },
+            {
+              "id": "23e4d768-b778-43e2-b6c6-79f898559650",
+              "name": "tokenUsedBy",
+              "value": "staff",
+              "type": "string"
+            },
+            {
+              "id": "ab96a29e-37f3-472d-9855-ac68b05e385e",
+              "name": "approvalBy",
+              "value": "staff",
+              "type": "string"
+            },
+            {
+              "id": "ced495cf-5318-4259-a2ae-6db249c03fe7",
+              "name": "requestId",
+              "value": "={{$json.requestId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        -176
+      ],
+      "id": "ff0955b6-45e7-402b-9b97-ed153c4ea411",
+      "name": "Reject - Güncellenecek Alanlar"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approvalToken": "={{$json.token}}",
+            "approvalStatus": "REJECTED",
+            "status": "REJECTED",
+            "approvalAt": "={{$json.approvalAt}}",
+            "tokenUsedAt": "={{$json.tokenUsedAt}}",
+            "isTokenUsed": "true",
+            "documentStatus": "NOT_CREATED",
+            "rejectReason": "\"Talep personel tarafından reddedildi\"",
+            "requestId": "={{$json.requestId}}"
+          },
+          "matchingColumns": [
+            "approvalToken"
+          ],
+          "schema": [
+            {
+              "id": "requestId",
+              "displayName": "requestId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentNo",
+              "displayName": "studentNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requestType",
+              "displayName": "requestType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalStatus",
+              "displayName": "approvalStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalBy",
+              "displayName": "approvalBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalAt",
+              "displayName": "approvalAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalToken",
+              "displayName": "approvalToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documentStatus",
+              "displayName": "documentStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentUrl",
+              "displayName": "documentUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentType",
+              "displayName": "documentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentName",
+              "displayName": "studentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "program",
+              "displayName": "program",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "class",
+              "displayName": "class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rejectReason",
+              "displayName": "rejectReason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenExpiresAt",
+              "displayName": "tokenExpiresAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenUsedAt",
+              "displayName": "tokenUsedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenUsedBy",
+              "displayName": "tokenUsedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "isTokenUsed",
+              "displayName": "isTokenUsed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notificationStatus",
+              "displayName": "notificationStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notificationSentAt",
+              "displayName": "notificationSentAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pdfUrl",
+              "displayName": "pdfUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verificationCode",
+              "displayName": "verificationCode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        -176
+      ],
+      "id": "cf2c8e99-175d-4d21-b683-7476ebf282c7",
+      "name": "Reject - Log Güncelle",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d73215a-ba9b-4624-bc9d-2dfce525295d",
+              "name": "AiMessage",
+              "value": "={{$json.text || $json.output || $json.response || $json.content || 'Talep reddedildi. Bu işlem için belge oluşturulmadı.'}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1552,
+        -176
+      ],
+      "id": "6f9335a7-aea1-4e1a-b40c-f2b8bb352726",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.aiMessage}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1712,
+        -176
+      ],
+      "id": "2962ec6a-f87d-4d3a-b00d-b4f0457945ec",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.aiMessage}}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1296,
+        144
+      ],
+      "id": "7089225d-3f56-4933-9c6d-cc4e9f180970",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "134c7237-a61b-4dbf-a194-9892ade1c723",
+              "leftValue": "={{ !!$json.tokenExpiresAt && new Date($json.tokenExpiresAt).getTime() < Date.now() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        192
+      ],
+      "id": "eb0a6b2f-a727-458c-8c1e-102242360447",
+      "name": "Reject - Süresi Doldu mu?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "40d42a0f-180b-4f31-b3cf-3232c5b9b677",
+              "name": "success",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "5f3916ca-88b1-4e9f-b7d4-0e3bc795a071",
+              "name": "AiMessage",
+              "value": "Bu bağlantının süresi dolmuştur.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "d4ddf303-9953-4937-9f10-eff9b448c4a0",
+      "name": "Reject_Expired_Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98d97cfa-7e8c-4df6-a55e-7e08bcacd576",
+              "name": "aiMessage",
+              "value": "Bu bağlantı geçersizdir veya daha önce kullanılmıştır.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        368
+      ],
+      "id": "4e9152c8-8b49-455f-9499-fd5cc4793d6a",
+      "name": "Reject_InvalidOrUsed_Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.aiMessage}}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1280,
+        368
+      ],
+      "id": "8ba4e210-4c1e-4767-97ab-3c802de4af03",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sadece şu cümleyi yaz:\nTalep reddedildi. Bu işlem için belge oluşturulmadı.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1264,
+        -176
+      ],
+      "id": "77941def-deed-486d-91fa-24eac1c37f08",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -16
+      ],
+      "id": "4a097310-848e-429f-9493-a1346bbd0293",
+      "name": "Google Gemini Chat Model"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Reject - Input Hazırla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Input Hazırla": {
+      "main": [
+        [
+          {
+            "node": "Reject - Log Kaydını Bul",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Log Kaydını Bul": {
+      "main": [
+        [
+          {
+            "node": "Reject - Geçerli mi?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Geçerli mi?": {
+      "main": [
+        [
+          {
+            "node": "Reject - Güncellenecek Alanlar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject - Süresi Doldu mu?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Güncellenecek Alanlar": {
+      "main": [
+        [
+          {
+            "node": "Reject - Log Güncelle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Log Güncelle": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject - Süresi Doldu mu?": {
+      "main": [
+        [
+          {
+            "node": "Reject_Expired_Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject_InvalidOrUsed_Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject_Expired_Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject_InvalidOrUsed_Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": [],
+  "pinData": {}
+}

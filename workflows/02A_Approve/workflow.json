@@ -1,0 +1,1892 @@
+{
+  "name": "02A_Approve",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "approve",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "b4d92ec1-f97e-4392-bfc3-d083c8bcc6fc",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3ff0d74-7344-47a5-99e3-4425db8e1370",
+              "name": "token",
+              "value": "={{$json.query.token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        0
+      ],
+      "id": "4ea979b3-48c5-40ff-b84a-d9a69fbfd530",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88ca9c83-e8af-4d2b-9fa7-f60ab99e8123",
+              "name": "requestId",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.requestId}}",
+              "type": "string"
+            },
+            {
+              "id": "3b6a0555-dd55-4cd3-b2b7-de9dcecb8f6c",
+              "name": "studentNo",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.studentNo}}",
+              "type": "string"
+            },
+            {
+              "id": "d855e6f5-5217-40e0-b483-eaad2d3812e5",
+              "name": "email",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.email}}",
+              "type": "string"
+            },
+            {
+              "id": "e7ba637f-fff1-412c-9c20-7680fdc19517",
+              "name": "requestType",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.requestType}}",
+              "type": "string"
+            },
+            {
+              "id": "d292c42e-b84c-4c1a-91d3-e72931a7e6d9",
+              "name": "approvalToken",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.approvalToken}}",
+              "type": "string"
+            },
+            {
+              "id": "a064d9dc-8bd9-40ce-a37d-7aab09d3a33d",
+              "name": "status",
+              "value": "APPROVED",
+              "type": "string"
+            },
+            {
+              "id": "99243746-1aa9-4d46-99cb-4d20f597f848",
+              "name": "approvalAt",
+              "value": "={{new Date().toISOString()}}",
+              "type": "string"
+            },
+            {
+              "id": "70e4d6a7-f4c7-495f-9d3a-956d493f7d9d",
+              "name": "approvalBy",
+              "value": "student_affairs",
+              "type": "string"
+            },
+            {
+              "id": "35cb82d3-18a7-4d36-92b8-d5570413a871",
+              "name": "approvalStatus",
+              "value": "APPROVED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -16
+      ],
+      "id": "de368ba0-875a-4c0b-8b62-ca39f16f00f9",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approvalToken": "={{$node[\"Get row(s) in sheet (student)\"].json.approvalToken}}",
+            "approvalAt": "={{new Date().toISOString()}}",
+            "approvalBy": "staff",
+            "approvalStatus": "PROCESSING",
+            "status": "PROCESSING"
+          },
+          "matchingColumns": [
+            "approvalToken"
+          ],
+          "schema": [
+            {
+              "id": "requestId",
+              "displayName": "requestId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentNo",
+              "displayName": "studentNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requestType",
+              "displayName": "requestType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalStatus",
+              "displayName": "approvalStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalBy",
+              "displayName": "approvalBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalAt",
+              "displayName": "approvalAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approvalToken",
+              "displayName": "approvalToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documentStatus",
+              "displayName": "documentStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentUrl",
+              "displayName": "documentUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentType",
+              "displayName": "documentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentName",
+              "displayName": "studentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "program",
+              "displayName": "program",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "class",
+              "displayName": "class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -16
+      ],
+      "id": "e40a33e2-a8b0-4cf6-992d-03a137c5e499",
+      "name": "Append or update row in sheet"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5dec868b-ed1e-4130-9a2f-dcb6cd6d883a",
+              "name": "studentNo",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.studentNo}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        -16
+      ],
+      "id": "14004e3d-3723-4cbc-a077-8c7da546cd2a",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "folderId": "default",
+        "title": "={{\"Belge-\" + $node[\"Get row(s) in sheet (student)\"].json.studentNo + \"-\" + $node[\"Get row(s) in sheet (student)\"].json.requestId}}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -144
+      ],
+      "id": "16eed7e5-d0da-4cdb-9955-e297ed87855a",
+      "name": "Create a document"
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{$node[\"Create a document\"].json.id}}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2192,
+        -144
+      ],
+      "id": "dbe91c8e-7755-4211-a43c-a99057033b97",
+      "name": "Share file"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d789c24-3be8-4cf9-8b2c-c7332e79aab0",
+              "name": "studentName",
+              "value": "={{$node[\"Get row(s) in sheet\"].json.firstName + \" \" + $node[\"Get row(s) in sheet\"].json.lastName}}",
+              "type": "string"
+            },
+            {
+              "id": "291c0049-fed7-455f-a0df-f00322c2f5b4",
+              "name": "html",
+              "value": "=<!doctype html>\n<html>\n<head><meta charset=\"utf-8\"></head>\n<body style=\"font-family:Arial; padding:24px;\">\n  <h2>{{ $node[\"Get row(s) in sheet (student)\"].json.requestType }} Talebi</h2>\n  <p><b>RequestId:</b> {{ $node[\"Get row(s) in sheet (student)\"].json.requestId }}</p>\n  <p><b>Öğrenci No:</b> {{ $node[\"Get row(s) in sheet\"].json.studentNo }}</p>\n  <p><b>Ad Soyad:</b> {{ $node[\"Get row(s) in sheet\"].json.firstName }} {{ $node[\"Get row(s) in sheet\"].json.lastName }}</p>\n  <p><b>Fakülte:</b> {{ $node[\"Get row(s) in sheet\"].json.faculty }}</p>\n  <p><b>Bölüm:</b> {{ $node[\"Get row(s) in sheet\"].json.department }}</p>\n  <p><b>Program:</b> {{ $node[\"Get row(s) in sheet\"].json.program }}</p>\n  <p><b>Sınıf:</b> {{ $node[\"Get row(s) in sheet\"].json.class }}</p>\n  <hr/>\n  <p><b>Durum:</b> APPROVED</p>\n  <small>Token: {{ $node[\"Edit Fields\"].json.token }}</small>\n</body>\n</html>",
+              "type": "string"
+            },
+            {
+              "id": "422a3f14-bd59-452c-9220-0f5cf68a62cb",
+              "name": "documentType",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.requestType}}",
+              "type": "string"
+            },
+            {
+              "id": "22f1eb9d-65d0-47f9-b45c-1ac0198a1201",
+              "name": "documentStatus",
+              "value": "GENERATED",
+              "type": "string"
+            },
+            {
+              "id": "621e594b-73a0-456c-849d-d8e60d6d863a",
+              "name": "department",
+              "value": "={{$node[\"Get row(s) in sheet\"].json.department}}",
+              "type": "string"
+            },
+            {
+              "id": "7b1ba78f-64df-40ff-b5de-53333abec49e",
+              "name": "program",
+              "value": "={{$node[\"Get row(s) in sheet\"].json.program}}",
+              "type": "string"
+            },
+            {
+              "id": "3b3cdde4-7114-4d9a-ac4e-4efbd40ddab5",
+              "name": "class",
+              "value": "={{$node[\"Get row(s) in sheet\"].json.class}}",
+              "type": "string"
+            },
+            {
+              "id": "02afc918-def0-45b9-93b7-ecb480d0ea6c",
+              "name": "documentUrl",
+              "value": "={{\"https://docs.google.com/document/d/\" + $node[\"Create a document\"].json.id + \"/edit\"}}",
+              "type": "string"
+            },
+            {
+              "id": "b880b96e-52e9-44af-a82e-16dc5f589f9a",
+              "name": "approvalToken",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.approvalToken}}",
+              "type": "string"
+            },
+            {
+              "id": "0bd8ef72-61ae-497c-83c4-9f36cbf03f9b",
+              "name": "requestType",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.requestType}}",
+              "type": "string"
+            },
+            {
+              "id": "df570039-515f-42ab-ae6d-a0d7033b6b91",
+              "name": "email",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.email}}",
+              "type": "string"
+            },
+            {
+              "id": "8cb145da-7872-4a4c-866c-7f0675e55152",
+              "name": "requestId",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.requestId}}",
+              "type": "string"
+            },
+            {
+              "id": "e8187256-d83c-4783-a614-8b3c432cbf9f",
+              "name": "studentNo",
+              "value": "={{$node[\"Get row(s) in sheet (student)\"].json.studentNo}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2384,
+        -144
+      ],
+      "id": "a1ac8caa-ecb5-4025-9205-596be7b32caa",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approvalToken": "={{$json.approvalToken}}",
+            "documentType": "={{$json.documentType}}",
+            "documentUrl": "={{$json.documentUrl}}",
+            "studentName": "={{$json.studentName}}",
+            "department": "={{$json.department}}",
+            "program": "={{$json.program}}",
+            "class": "={{$json.class}}",
+            "requestType": "=",
+            "isTokenUsed": "true",
+            "tokenUsedAt": "={{new Date().toISOString()}}",
+            "approvalStatus": "APPROVED",
+            "documentStatus": "COMPLETED",
+            "status": "APPROVED"
+          },
+          "matchingColumns": [
+            "approvalToken"
+          ],
+          "schema": [
+            {
+              "id": "requestId",
+              "displayName": "requestId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "studentNo",
+              "displayName": "studentNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "requestType",
+              "displayName": "requestType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalStatus",
+              "displayName": "approvalStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalBy",
+              "displayName": "approvalBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalAt",
+              "displayName": "approvalAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalToken",
+              "displayName": "approvalToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documentStatus",
+              "displayName": "documentStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documentUrl",
+              "displayName": "documentUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentType",
+              "displayName": "documentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentName",
+              "displayName": "studentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "program",
+              "displayName": "program",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "class",
+              "displayName": "class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "rejectReason",
+              "displayName": "rejectReason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokenExpiresAt",
+              "displayName": "tokenExpiresAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokenUsedAt",
+              "displayName": "tokenUsedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tokenUsedBy",
+              "displayName": "tokenUsedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "isTokenUsed",
+              "displayName": "isTokenUsed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notificationStatus",
+              "displayName": "notificationStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notificationSentAt",
+              "displayName": "notificationSentAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pdfUrl",
+              "displayName": "pdfUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "verificationCode",
+              "displayName": "verificationCode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        -144
+      ],
+      "id": "ff488796-789b-457b-8f31-fe654b0912df",
+      "name": "Append or update row in sheet1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "approvalToken",
+              "lookupValue": "={{$json.token}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        0
+      ],
+      "id": "748a7010-7902-48ed-8ed9-617968465cf9",
+      "name": "Get row(s) in sheet (student)"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Students",
+          "mode": "name",
+          "cachedResultName": "Students"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "studentNo",
+              "lookupValue": "={{$json.studentNo}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1376,
+        -16
+      ],
+      "id": "e15d881d-b9f7-4f27-830e-e52f4786e8e6",
+      "name": "Get row(s) in sheet"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0d608e11-74da-437f-9904-e3c085db4f72",
+              "leftValue": "={{$json.isValidToken}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "19a823b8-2789-4703-b9a7-3a230a94cef1",
+      "name": "Approve - Token Geçerli mi?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f33947b0-be54-4b75-9001-08f485630b73",
+              "leftValue": "={{$json.studentNo || \"\"}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5200e93f-918c-42ce-b50e-9bc0a5c8e2c9",
+              "leftValue": "={{ $json.isValidToken }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        -16
+      ],
+      "id": "fb490423-8b82-4862-959e-931139995efb",
+      "name": "Approve - Öğrenci bulundu mu?",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "237de687-dfad-41fb-b783-2b96747084d9",
+              "name": "status",
+              "value": "FAILED",
+              "type": "string"
+            },
+            {
+              "id": "8cec99e7-f079-4bcd-9b64-8a86cb866ce5",
+              "name": "approvalStatus",
+              "value": "ERROR",
+              "type": "string"
+            },
+            {
+              "id": "f727cbf1-5139-4c9f-9c8c-d550612b0f98",
+              "name": "documentStatus",
+              "value": "FAILED",
+              "type": "string"
+            },
+            {
+              "id": "3d42673e-609b-4b92-b225-2bc968ce2528",
+              "name": "errorMessage",
+              "value": "STUDENT_NOT_FOUND",
+              "type": "string"
+            },
+            {
+              "id": "70f66930-5388-4f82-ad09-04d6ae8197e9",
+              "name": "documentUrl",
+              "value": "={{\"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "76279387-50b0-4d7d-b174-4e01be42c668",
+              "name": "approvalToken",
+              "value": "={{$node[\"Append or update row in sheet\"].json.approvalToken || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "bc04d3f6-e1f7-407d-946e-daa43394372d",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2000,
+        112
+      ],
+      "id": "eaa4642c-54b4-4470-8629-2bdf739a7a14",
+      "name": "Approve - Öğrenci Yok Hata"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_STUDENT_REQUESTS_GOOGLE_SHEET_ID",
+          "mode": "id",
+          "cachedResultName": "student_requests_workbook"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name",
+          "cachedResultName": "Requests"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approvalToken": "={{$json.approvalToken}}"
+          },
+          "matchingColumns": [
+            "approvalToken"
+          ],
+          "schema": [
+            {
+              "id": "requestId",
+              "displayName": "requestId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentNo",
+              "displayName": "studentNo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requestType",
+              "displayName": "requestType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalStatus",
+              "displayName": "approvalStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalBy",
+              "displayName": "approvalBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalAt",
+              "displayName": "approvalAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approvalToken",
+              "displayName": "approvalToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "documentStatus",
+              "displayName": "documentStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentUrl",
+              "displayName": "documentUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "documentType",
+              "displayName": "documentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "studentName",
+              "displayName": "studentName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "program",
+              "displayName": "program",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "class",
+              "displayName": "class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rejectReason",
+              "displayName": "rejectReason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenExpiresAt",
+              "displayName": "tokenExpiresAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenUsedAt",
+              "displayName": "tokenUsedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokenUsedBy",
+              "displayName": "tokenUsedBy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "isTokenUsed",
+              "displayName": "isTokenUsed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notificationStatus",
+              "displayName": "notificationStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notificationSentAt",
+              "displayName": "notificationSentAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pdfUrl",
+              "displayName": "pdfUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "verificationCode",
+              "displayName": "verificationCode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2224,
+        112
+      ],
+      "id": "3c33d9c0-a936-4fdf-8456-7bffb817d9f5",
+      "name": "Append or update row in sheet2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2592,
+        112
+      ],
+      "id": "7569af6e-2b5c-46e8-a089-97813e80fc9e",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72cd97ed-7146-4d92-963a-329cb5db73e3",
+              "name": "success",
+              "value": "={{false}}",
+              "type": "string"
+            },
+            {
+              "id": "a3a8fc60-feff-4401-b7c1-275f3f3f6e55",
+              "name": "message",
+              "value": "Öğrenci bilgisi bulunamadı. Belge oluşturulmadı.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2416,
+        112
+      ],
+      "id": "9843e427-7fc2-4e25-9b92-a20d3e7f8263",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.aiMessage}}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3344,
+        -144
+      ],
+      "id": "60ec3791-13ab-4b6d-bb84-4db1a7d741ff",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9592cd22-a03a-47b7-9470-41abda9ba37e",
+              "name": "documentUrl",
+              "value": "={{ $('Edit Fields3').first().json.documentUrl || $('Share file').first().json.webViewLink || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "06f058a0-ff76-4ea3-8fc3-0c8d7b4c8b15",
+              "name": "success",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "5060cdef-13ae-4472-ba52-b5534c814e8b",
+              "name": "aiMessage",
+              "value": "={{($json.text || $json.output || $json.response || $json.content || 'Talebiniz onaylandı. Belgeniz hazır.') + '\\nBelge linki: ' + ($('Edit Fields3').first().json.documentUrl || $('Share file').first().json.webViewLink || '')}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3136,
+        -144
+      ],
+      "id": "1260481c-d92a-4eec-a206-5f6ba7172d34",
+      "name": "Approve - Başarılı Cevap"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b5bddd1-9a76-4cf9-81ee-f794f311b7c5",
+              "name": "tokenFromQuery",
+              "value": "={{ $node[\"Webhook\"].json.query.token }}",
+              "type": "string"
+            },
+            {
+              "id": "54e21bd2-dd16-4733-9f2a-9f906f85a28e",
+              "name": "isTokenFound",
+              "value": "={{ !!$json.approvalToken }}",
+              "type": "string"
+            },
+            {
+              "id": "b289cbdf-13e9-488c-ae60-13e0c5edd350",
+              "name": "isTokenUsed",
+              "value": "={{String($json.isTokenUsed).toLowerCase() === 'true'}}",
+              "type": "string"
+            },
+            {
+              "id": "c2dbe729-6b8a-4c59-931b-75808f81152d",
+              "name": "isExpired",
+              "value": "={{ new Date($json.tokenExpiresAt).getTime() < Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "c256691b-d176-466e-b03f-5ae871601214",
+              "name": "isValidToken",
+              "value": "={{ !!$json.approvalToken && String($json.isTokenUsed).toLowerCase() !== 'true' && new Date($json.tokenExpiresAt).getTime() >= Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "3dee0cb9-701b-4e2f-a1a2-3ad184e90f57",
+              "name": "nowIso",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "b0bbbd2a-c6cb-49b0-adf4-0be65fd16528",
+              "name": "requestId",
+              "value": "={{$json.requestId}}",
+              "type": "string"
+            },
+            {
+              "id": "1d648bf6-659b-428e-b877-967717fcafb0",
+              "name": "studentNo",
+              "value": "={{$json.studentNo}}",
+              "type": "string"
+            },
+            {
+              "id": "2668d205-5dff-4151-abb1-7ab7f86cdfb9",
+              "name": "email",
+              "value": "={{$json.email}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        0
+      ],
+      "id": "8eba28ae-9e8f-408e-9fed-0fd93db65add",
+      "name": "Approve-TokenKontrolHazirla"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "591b3db2-52e1-43ea-b0b7-fd55daf36a53",
+              "leftValue": "={{ $json.isTokenFound.toBoolean() && $json.isExpired.toBoolean() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        928,
+        272
+      ],
+      "id": "7537aee7-8206-4a5c-8cfb-eaba9316391f",
+      "name": "Approve-TokenSuresiDolduMu"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2afb144-b696-420a-b4a0-ebb74830893c",
+              "name": "success",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "eb958850-df75-403d-809a-7d0d75873490",
+              "name": "code",
+              "value": "TOKEN_EXPIRED",
+              "type": "string"
+            },
+            {
+              "id": "ed2b7112-b990-4468-8b18-18c86ffe320c",
+              "name": "message",
+              "value": "Bu onay linkinin süresi dolmuş. Yeni talep oluşturulması gerekiyor.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        256
+      ],
+      "id": "22e4c8b7-425d-4f50-ace1-a098f1dd13f6",
+      "name": "Approve_Expired_Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da0d3e3c-1fe1-4aba-aca7-fa8ed9c01944",
+              "name": "success",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "65a3d7c4-d8a5-47b1-bb07-1bb6b4084616",
+              "name": "code",
+              "value": "INVALID_OR_USED_TOKEN",
+              "type": "string"
+            },
+            {
+              "id": "c2f47a99-c4ff-48cd-80b0-6bb45ba46080",
+              "name": "message",
+              "value": "Geçersiz veya daha önce kullanılmış approve linki.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        496
+      ],
+      "id": "496c4d90-1c94-4729-82e9-67759e5bf534",
+      "name": "Approve_InvalidOrUsed_Response"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1696,
+        496
+      ],
+      "id": "cd38f8e7-1bd4-4443-a7f6-71015bed2056",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1680,
+        256
+      ],
+      "id": "07455386-12cf-445c-b67f-d3a5108384b0",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Bir üniversite öğrenci işleri otomasyonu için kullanıcıya gösterilecek kısa bir onay mesajı üret.\n\nKurallar:\n- Türkçe yaz.\n- Resmi ama anlaşılır ol.\n- En fazla 2 cümle olsun.\n- Talebin onaylandığını açıkça söyle.\n- Belgenin hazır olduğunu açıkça söyle.\n- Sadece düz metin üret.\n- Başlık yazma.\n- Madde madde yazma.\n\nBilgiler:\nTalep No: {{ $('Edit Fields2').first().json.requestId || '' }}\nÖğrenci No: {{ $('Edit Fields2').first().json.studentNo || '' }}\nÖğrenci Adı: {{ $('Edit Fields2').first().json.studentName || '' }}\nTalep Türü: {{ $('Edit Fields2').first().json.requestType || '' }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2816,
+        -144
+      ],
+      "id": "ae9f314c-ca02-49e6-9ae0-5df5e1288c0c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        32
+      ],
+      "id": "3ebf1d98-9b5a-46a2-a6f0-a559f7da26f0",
+      "name": "Google Gemini Chat Model"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet (student)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet (student)": {
+      "main": [
+        [
+          {
+            "node": "Approve-TokenKontrolHazirla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Approve - Öğrenci bulundu mu?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve - Token Geçerli mi?": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve-TokenSuresiDolduMu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve - Öğrenci bulundu mu?": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve - Öğrenci Yok Hata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve - Öğrenci Yok Hata": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve - Başarılı Cevap": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve-TokenKontrolHazirla": {
+      "main": [
+        [
+          {
+            "node": "Approve - Token Geçerli mi?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve-TokenSuresiDolduMu": {
+      "main": [
+        [
+          {
+            "node": "Approve_Expired_Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve_InvalidOrUsed_Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve_Expired_Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve_InvalidOrUsed_Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Approve - Başarılı Cevap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": [],
+  "pinData": {}
+}
