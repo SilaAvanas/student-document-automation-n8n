@@ -1,0 +1,118 @@
+{
+  "name": "Academic Calendar SMS Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "from": "={{ $env.TWILIO_PHONE_NUMBER }}",
+        "to": "={{ $env.NOTIFICATION_PHONE }}",
+        "message": "=Demo University: Yarin ({{ $json.tarih }}) {{ $json.etkinlik }} basliyor. Lutfen ogrenci isleri sureclerini zamaninda tamamla.",
+        "options": {}
+      },
+      "name": "Twilio ile SMS At",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "99REPLACE_WITH_GOOGLE_SHEET_ID"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Her Sabah Tetikle1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -832,
+        448
+      ],
+      "id": "fcfcREPLACE_WITH_GOOGLE_SHEET_ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Demo University Akademik Takvim Verisi Simülasyonu\nlet yarin = new Date();\nyarin.setDate(yarin.getDate() + 1);\nlet yarinTarih = yarin.toISOString().split('T')[0];\n\nreturn [\n  {\n    json: {\n      etkinlik: \"Dersten Çekilme Başvuruları\", \n      tarih: yarinTarih, // Testin çalışması için otomatik yarının tarihini alır\n      telefon: \"={{ $env.NOTIFICATION_PHONE }}\" \n    }\n  }\n];"
+      },
+      "name": "Takvimi Oku1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        448
+      ],
+      "id": "9908b43a-7266-4adf-b721-35b26a77ebd1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.tarih }}",
+              "value2": "={{ new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] }}"
+            }
+          ]
+        }
+      },
+      "name": "Yarınki Etkinlikleri Filtrele1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        448
+      ],
+      "id": "c45dREPLACE_WITH_GOOGLE_SHEET_ID"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Her Sabah Tetikle1": {
+      "main": [
+        [
+          {
+            "node": "Takvimi Oku1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Takvimi Oku1": {
+      "main": [
+        [
+          {
+            "node": "Yarınki Etkinlikleri Filtrele1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Yarınki Etkinlikleri Filtrele1": {
+      "main": [
+        [
+          {
+            "node": "Twilio ile SMS At",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {},
+  "tags": []
+}
