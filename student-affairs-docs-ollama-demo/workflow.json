@@ -1,0 +1,460 @@
+{
+  "name": "Student Affairs Docs - Ollama Local Demo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "43b3REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        6384,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      requestText: \"Merhaba, ben Demo Öğrenci. Öğrenci numaram 20210002. Örnek Program 2 bölümünden mezun oldum. Geçici mezuniyet belgesi talep ediyorum.\",\n      operatorName: \"Demo Operatör\",\n      source: \"manual_demo\",\n      targetUniversity: \"Demo Üniversitesi\",\n      requestLanguage: \"tr\"\n    }\n  }\n];"
+      },
+      "id": "394227dd-279REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Demo Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6528,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ...$json,\n    ollama: {\n      baseUrl: $env.OLLAMA_BASE_URL || \"http://127.0.0.1:11434\",\n      model: $env.OLLAMA_MODEL || \"qwen2.5:3b-instruct\"\n    }\n  }\n}];"
+      },
+      "id": "5249REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Ollama Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6672,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const schema = {\n  type: \"object\",\n  properties: {\n    documentType: {\n      type: \"string\",\n      enum: [\"student_certificate\", \"temporary_graduation\", \"military_student_status\"]\n    },\n    documentTypeLabel: {\n      type: \"string\",\n      enum: [\n        \"öğrenci durum belgesi\",\n        \"geçici mezuniyet belgesi\",\n        \"askerlik için öğrenci durum belgesi\"\n      ]\n    },\n    studentName: { type: \"string\" },\n    studentNo: { type: \"string\" },\n    programHint: { type: \"string\" },\n    language: { type: \"string\" },\n    reason: { type: \"string\" },\n    confidence: { type: \"number\" },\n    missingFields: {\n      type: \"array\",\n      items: { type: \"string\" }\n    }\n  },\n  required: [\n    \"documentType\",\n    \"documentTypeLabel\",\n    \"studentName\",\n    \"studentNo\",\n    \"programHint\",\n    \"language\",\n    \"reason\",\n    \"confidence\",\n    \"missingFields\"\n  ]\n};\n\nconst prompt = `\nSen ${$json.targetUniversity || 'bir üniversitenin'} öğrenci işleri biriminde çalışan talep analiz ajanısın.\nGörevin, aşağıdaki serbest metni inceleyip belge türünü ve temel alanları çıkarmaktır.\n\nSadece JSON üret.\nAçıklama yazma.\nMarkdown kullanma.\nAlan uydurma.\nMetinde açıkça geçmeyen bilgiyi tahmin etme.\n\nBelge türü sadece şu kodlardan biri olabilir:\n- student_certificate\n- temporary_graduation\n- military_student_status\n\nBelge türü eşleştirmesi:\n- student_certificate = öğrenci durum belgesi\n- temporary_graduation = geçici mezuniyet belgesi\n- military_student_status = askerlik için öğrenci durum belgesi\n\nKarar kuralları:\n- Metinde askerlik, tecil, askerlik şubesi, yoklama gibi ifadeler varsa: military_student_status\n- Metinde mezun oldum, mezuniyet, diploma çıkana kadar, geçici mezuniyet gibi ifadeler varsa: temporary_graduation\n- Bunlar yoksa ve öğrenciliği kanıtlayan genel bir belge isteniyorsa: student_certificate\n\nAlan kuralları:\n- studentName: metinde açıkça varsa yaz\n- studentNo: metinde açıkça varsa yaz\n- programHint: bölüm / program bilgisi varsa yaz\n- language: Türkçe ise \"tr\", İngilizce ise \"en\"\n- reason: öğrencinin belgeyi isteme nedenini kısa yaz\n- confidence: 0 ile 1 arasında sayı ver\n- missingFields: eksik ama önemli alanları diziye ekle\n\nÖnemli:\n- “öğrenci belgesi” ifadesini otomatik olarak mezuniyet belgesi sayma\n- “mezuniyet” geçmiyorsa temporary_graduation seçme\n- “askerlik” geçiyorsa student_certificate seçme\n\nTalep metni:\n${$json.requestText}\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    ollamaIntakePayload: {\n      model: $json.ollama.model,\n      prompt,\n      stream: false,\n      format: schema,\n      options: {\n        temperature: 0.1\n      }\n    }\n  }\n}];"
+      },
+      "id": "476cad8a-d482-4c6f-9d10-028ebbf718eb",
+      "name": "Build Intake Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6816,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.ollama.baseUrl + '/api/generate' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.ollamaIntakePayload) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "7594876e-8c72-48c2-a500-bf6bcd4bc9c2",
+      "name": "Ollama Intake Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6992,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeParse(value) {\n  if (typeof value === 'object' && value !== null) return value;\n  try {\n    return JSON.parse(value);\n  } catch (e) {\n    const match = String(value || '').match(/\\{[\\s\\S]*\\}/);\n    if (match) {\n      try { return JSON.parse(match[0]); } catch (e2) {}\n    }\n  }\n  return null;\n}\n\nconst parsed = safeParse($json.response);\n\nif (!parsed) {\n  throw new Error('Ollama intake çıktısı JSON olarak ayrıştırılamadı. response=' + String($json.response).slice(0, 400));\n}\n\nreturn [{\n  json: {\n    ...$('Build Intake Payload').item.json,\n    agent_intake: {\n      documentType: parsed.documentType || 'student_certificate',\n      studentName: parsed.studentName || '',\n      studentNo: parsed.studentNo || '',\n      programHint: parsed.programHint || '',\n      language: parsed.language || 'tr',\n      reason: parsed.reason || '',\n      confidence: parsed.confidence ?? 0.7,\n      missingFields: Array.isArray(parsed.missingFields) ? parsed.missingFields : []\n    },\n    ollamaIntakeRaw: $json.response\n  }\n}];"
+      },
+      "id": "c70REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Parse Intake JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7152,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const students = [\n  {\n    studentNo: '210113416',\n    fullName: 'Örnek Öğrenci 1',\n    programName: 'Örnek Program',\n    facultyName: 'Örnek Fakülte',\n    status: 'active',\n    gpa: 3.21,\n    creditsCompleted: 108,\n    graduationDate: null,\n    expectedGraduationDate: '28-06-2026',\n    militaryEligible: true,\n    email: '210113416@example.edu',\n    startTerm: '15-09-2022'\n  },\n  {\n    studentNo: '20210002',\n    fullName: 'Demo Öğrenci',\n    programName: 'Örnek Program 2',\n    facultyName: 'Örnek Fakülte',\n    status: 'graduated',\n    gpa: 3.46,\n    creditsCompleted: 126,\n    graduationDate: '28-06-2025',\n    expectedGraduationDate: null,\n    militaryEligible: false,\n    email: '20210002@example.edu',\n    startTerm: '15-09-2021'\n  },\n  {\n    studentNo: '20230077',\n    fullName: 'Örnek Öğrenci 2',\n    programName: 'Örnek Program 3',\n    facultyName: 'Örnek Fakülte',\n    status: 'active',\n    gpa: 2.94,\n    creditsCompleted: 72,\n    graduationDate: null,\n    expectedGraduationDate: '28-06-2027',\n    militaryEligible: true,\n    email: '20230077@example.edu',\n    startTerm: '15-09-2023'\n  }\n];\n\nconst wantedNo = String($json.agent_intake?.studentNo || '').trim();\nconst wantedName = String($json.agent_intake?.studentName || '').trim().toLowerCase();\n\nlet student = students.find(s => s.studentNo === wantedNo);\n\nif (!student && wantedName) {\n  student = students.find(s => s.fullName.toLowerCase() === wantedName);\n}\n\nif (!student) {\n  student = {\n    studentNo: wantedNo || 'UNKNOWN',\n    fullName: $json.agent_intake?.studentName || 'Bilinmeyen Öğrenci',\n    programName: $json.agent_intake?.programHint || 'Bilinmeyen Program',\n    facultyName: 'Örnek Fakülte',\n    status: 'unknown',\n    gpa: null,\n    creditsCompleted: null,\n    graduationDate: null,\n    expectedGraduationDate: null,\n    militaryEligible: false,\n    email: 'demo.student@example.edu',\n    startTerm: null,\n    syntheticRecord: true\n  };\n}\n\nreturn [{\n  json: {\n    ...$json,\n    student\n  }\n}];"
+      },
+      "id": "97358560-978d-44aa-b6ff-c45f7523f005",
+      "name": "Demo Student Registry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7328,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const openDataContext = {\n  universityName: 'Demo Üniversitesi',\n  country: 'TÜRKİYE',\n  sourceType: 'Public open data context',\n  datasets: [\n    {\n      name: 'CU_SR_OPEN_DATA_CATALOG.csv',\n      url: 'https://opendata.concordia.ca/datasets/sis/CU_SR_OPEN_DATA_CATALOG.csv'\n    },\n    {\n      name: 'CU_SR_OPEN_DATA_CATALOG_DESC.csv',\n      url: 'https://opendata.concordia.ca/datasets/sis/CU_SR_OPEN_DATA_CATALOG_DESC.csv'\n    },\n    {\n      name: 'CU_SR_OPEN_DATA_TERM_SESS.csv',\n      url: 'https://opendata.concordia.ca/datasets/sis/CU_SR_OPEN_DATA_TERM_SESS.csv'\n    },\n    {\n      name: 'CU_SR_OPEN_DATA_DEPT_FAC_STRUC.csv',\n      url: 'https://opendata.concordia.ca/datasets/sis/CU_SR_OPEN_DATA_DEPT_FAC_STRUC.csv'\n    }\n  ],\n  normalizedPrograms: [\n    {\n      programName: 'Örnek Program',\n      facultyName: 'İktisadi ve İdari Bilimler',\n      level: 'Undergraduate',\n      sampleCourses: ['SOEN 287', 'SOEN 341', 'SOEN 390']\n    },\n    {\n      programName: 'Örnek Program',\n      facultyName: 'İktisadi ve İdari Bilimler',\n      level: 'Undergraduate',\n      sampleCourses: ['COMP 248', 'COMP 249', 'COMP 352']\n    },\n    {\n      programName: 'Örnek Program 2',\n      facultyName: 'Örnek Fakülte',\n      level: 'Undergraduate',\n      sampleCourses: ['BTM 200', 'BTM 382', 'BTM 481']\n    },\n    {\n      programName: 'Örnek Program 3',\n      facultyName: 'İktisadi ve İdari Bilimler',\n      level: 'Undergraduate',\n      sampleCourses: ['MIAE 211', 'MIAE 313', 'MIAE 380']\n    }\n  ]\n};\n\nconst programHint = ($json.agent_intake.programHint || $json.student.programName || '').toLowerCase();\nlet matchedProgram = openDataContext.normalizedPrograms.find(p => p.programName.toLowerCase() === programHint);\n\nif (!matchedProgram) {\n  matchedProgram = openDataContext.normalizedPrograms.find(p =>\n    programHint && p.programName.toLowerCase().includes(programHint)\n  ) || {\n    programName: $json.student.programName || 'General Studies',\n    facultyName: $json.student.facultyName || 'Demo Faculty',\n    level: 'Undergraduate',\n    sampleCourses: []\n  };\n}\n\nreturn [{\n  json: {\n    ...$json,\n    universityContext: {\n      ...openDataContext,\n      matchedProgram\n    }\n  }\n}];"
+      },
+      "id": "942b8542-6ffd-429c-bdee-2b94b04866b3",
+      "name": "Open Data Context Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7504,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const docType = $json.agent_intake?.documentType || '';\nconst student = $json.student || {};\n\nconst studentStatus = String(student.status || '').trim().toLowerCase();\n\nlet eligible = false;\nlet reason = '';\nlet statusLabel = '';\n\nif (docType === 'student_certificate') {\n  eligible = studentStatus === 'active';\n  reason = eligible\n    ? 'Öğrencinin aktif kayıt durumu doğrulandı.'\n    : 'Öğrenci aktif kayıtlı görünmediği için öğrenci durum belgesi düzenlenemedi.';\n  statusLabel = 'ÖĞRENCİ DURUM BELGESİ';\n\n} else if (docType === 'temporary_graduation') {\n  eligible = studentStatus === 'graduated' && !!student.graduationDate;\n  reason = eligible\n    ? 'Öğrencinin mezuniyet bilgisi doğrulandı.'\n    : 'Geçici mezuniyet belgesi düzenlenebilmesi için mezuniyet kaydının tamamlanmış olması gerekir.';\n  statusLabel = 'GEÇİCİ MEZUNİYET BELGESİ';\n\n} else if (docType === 'military_student_status') {\n  eligible = studentStatus === 'active' && !!student.militaryEligible;\n  reason = eligible\n    ? 'Öğrencinin aktif kayıt durumu ve askerlik amaçlı kullanım uygunluğu doğrulandı.'\n    : 'Askerlik için öğrenci durum belgesi düzenlenebilmesi için öğrencinin aktif kayıtlı ve uygun durumda olması gerekir.';\n  statusLabel = 'ASKERLİK İÇİN ÖĞRENCİ DURUM BELGESİ';\n\n} else {\n  eligible = false;\n  reason = 'Belge türü tanınamadı.';\n  statusLabel = 'BELGE DURUMU BELİRSİZ';\n}\n\nreturn [{\n  json: {\n    ...$json,\n    eligibility: {\n      eligible,\n      reason,\n      statusLabel\n    }\n  }\n}];"
+      },
+      "id": "59bfc2db-2983-49c3-a444-2a13126e7de4",
+      "name": "Eligibility Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7664,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function pad(v) {\n  return String(v).padStart(2, '0');\n}\n\nconst now = new Date();\nconst issueDate = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()}`;\nconst timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\nconst requestId = `STD-${timestamp}-${Math.floor(Math.random() * 900 + 100)}`;\n\nconst schema = {\n  type: \"object\",\n  properties: {\n    title: { type: \"string\" },\n    purposeLine: { type: \"string\" },\n    body: { type: \"string\" },\n    closingNote: { type: \"string\" }\n  },\n  required: [\"title\", \"purposeLine\", \"body\", \"closingNote\"]\n};\n\nconst student = $json.student || {};\nconst program = $json.universityContext?.matchedProgram || {};\nconst docType = $json.agent_intake?.documentType || '';\nconst eligible = !!$json.eligibility?.eligible;\nconst reason = $json.eligibility?.reason || '';\nconst universityName = $json.universityContext?.universityName || 'Üniversite';\n\nconst prompt = `\nSen üniversite öğrenci işleri için resmi belge metni yazan bir ajansın.\nSadece JSON üret. Açıklama yazma. Markdown kullanma.\n\nBilgiler:\nBelge türü: ${docType}\nUygunluk: ${eligible ? 'uygun' : 'uygun değil'}\nÜniversite: ${universityName}\nÖğrenci adı: ${student.fullName || ''}\nÖğrenci no: ${student.studentNo || ''}\nProgram: ${program.programName || ''}\nFakülte: ${program.facultyName || ''}\nÖğrenci durumu: ${student.status || ''}\nMezuniyet tarihi: ${student.graduationDate || '-'}\nBelge tarihi: ${issueDate}\nGerekçe: ${reason}\n\nKurallar:\n- Kısa, doğal ve resmi Türkçe kullan.\n- Talimat cümlesi yazma.\n- Tek paragraf yaz.\n- Kötü kalıplar kullanma.\n- Uygun değilse kısa ve nazik red metni yaz.\n\nBaşlıklar:\n- student_certificate => ÖĞRENCİ DURUM BELGESİ\n- temporary_graduation => GEÇİCİ MEZUNİYET BELGESİ\n- military_student_status => ASKERLİK İÇİN ÖĞRENCİ DURUM BELGESİ\n\nEk kural:\n- Uygun değilse title tam olarak TALEP SONUCU olsun.\n- closingNote kısa olsun.\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    requestId,\n    issueDate,\n    writerPayload: {\n      model: $json.ollama.model,\n      prompt,\n      stream: false,\n      format: schema,\n      options: {\n        temperature: 0\n      }\n    }\n  }\n}];"
+      },
+      "id": "434d5286-7564-4057-8172-caaef37fcb24",
+      "name": "Build Writer Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7840,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeParse(value) {\n  if (typeof value === 'object' && value !== null) return value;\n  try {\n    return JSON.parse(value);\n  } catch (e) {\n    const match = String(value || '').match(/\\{[\\s\\S]*\\}/);\n    if (match) {\n      try { return JSON.parse(match[0]); } catch (e2) {}\n    }\n  }\n  return null;\n}\n\nconst parsed = safeParse($json.response);\n\nif (!parsed) {\n  throw new Error('Ollama writer çıktısı JSON olarak ayrıştırılamadı. response=' + String($json.response).slice(0, 400));\n}\n\nreturn [{\n  json: {\n    ...$('Build Writer Payload').item.json,\n    writerResult: {\n      title: parsed.title || 'BELGE',\n      purposeLine: parsed.purposeLine || '',\n      body: parsed.body || '',\n      closingNote: parsed.closingNote || ''\n    },\n    ollamaWriterRaw: $json.response\n  }\n}];"
+      },
+      "id": "5dcdd0a3-5b66-4c3f-bbfa-3f9b6eef1330",
+      "name": "Parse Writer JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8224,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const schema = {\n  type: \"object\",\n  properties: {\n    passed: { type: \"boolean\" },\n    issues: {\n      type: \"array\",\n      items: { type: \"string\" }\n    },\n    correctedTitle: { type: \"string\" }\n  },\n  required: [\"passed\", \"issues\", \"correctedTitle\"]\n};\n\nconst w = $json.writerResult;\nconst s = $json.student;\nconst p = $json.universityContext.matchedProgram;\n\nconst prompt = `\nSen belge kalite kontrol ajanısın.\nAşağıdaki alanları incele ve sadece JSON schema ile cevap ver.\n\nBaşlık: ${w.title}\nAmaç satırı: ${w.purposeLine}\nGövde: ${w.body}\nÖğrenci adı: ${s.fullName}\nÖğrenci no: ${s.studentNo}\nProgram: ${p.programName}\nFakülte: ${p.facultyName}\nUygunluk gerekçesi: ${$json.eligibility.reason}\n\nKurallar:\n- Başlık ile içerik uyumlu mu kontrol et.\n- Boş veya eksik alan varsa issues içine yaz.\n- correctedTitle alanına düzeltilmiş nihai başlığı ver.\n- passed true yalnızca metin tutarlıysa olsun.\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    qcPayload: {\n      model: $json.ollama.model,\n      prompt,\n      stream: false,\n      format: schema,\n      options: {\n        temperature: 0\n      }\n    }\n  }\n}];"
+      },
+      "id": "7f487REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Build QC Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8384,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.ollama.baseUrl + '/api/generate' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.qcPayload) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "f605953f-d27e-4910-828a-9a6b24f79e9d",
+      "name": "Ollama QC Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        8544,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeParse(value) {\n  if (typeof value === 'object' && value !== null) return value;\n  try {\n    return JSON.parse(value);\n  } catch (e) {\n    const match = String(value || '').match(/\\{[\\s\\S]*\\}/);\n    if (match) {\n      try { return JSON.parse(match[0]); } catch (e2) {}\n    }\n  }\n  return null;\n}\n\nconst parsed = safeParse($json.response);\n\nif (!parsed) {\n  return [{\n    json: {\n      ...$('Build QC Payload').item.json,\n      qc: {\n        passed: true,\n        issues: ['QC çıktısı ayrıştırılamadı; varsayılan kabul edildi.'],\n        correctedTitle: $('Build QC Payload').item.json.writerResult.title\n      },\n      ollamaQcRaw: $json.response\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...$('Build QC Payload').item.json,\n    qc: {\n      passed: !!parsed.passed,\n      issues: Array.isArray(parsed.issues) ? parsed.issues : [],\n      correctedTitle: parsed.correctedTitle || $('Build QC Payload').item.json.writerResult.title\n    },\n    ollamaQcRaw: $json.response\n  }\n}];"
+      },
+      "id": "209f7e8a-0475-4c08-9f1b-af1f8fc13b56",
+      "name": "Parse QC JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8704,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const issueDate = $json.issueDate;\nconst requestId = $json.requestId;\nconst student = $json.student;\nconst program = $json.universityContext.matchedProgram;\nconst universityName = $json.universityContext.universityName;\nconst writer = $json.writerResult;\nconst qc = $json.qc || { passed: true, issues: [], correctedTitle: writer.title };\n\nfunction esc(v) {\n  return String(v ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n}\n\nconst title = qc.correctedTitle || writer.title;\nconst qcText = qc.issues.length ? qc.issues.join(' | ') : 'Kalite kontrol uyarısı yok.';\nconst noteText = writer.closingNote || 'Bu çıktı otomatik hazırlanmıştır. Gerçek üretimde öğrenci işleri veritabanı ve resmi imza mekanizması ile entegre edilmelidir.';\n\nconst htmlDocument = `\n<!doctype html>\n<html lang=\"tr\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>${esc(title)}</title>\n  <style>\n    body { font-family: Arial, Helvetica, sans-serif; margin: 40px; color: #111827; line-height: 1.6; }\n    .page { max-width: 900px; margin: 0 auto; border: 1px solid #d1d5db; padding: 40px; }\n    .topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }\n    .org { font-size: 14px; color: #374151; }\n    .title { text-align: center; font-size: 24px; font-weight: bold; margin: 20px 0 10px; }\n    .meta { margin-top: 8px; font-size: 14px; color: #4b5563; }\n    .box { background: #f9fafb; border: 1px solid #e5e7eb; padding: 14px 16px; margin: 20px 0; }\n    .footer { margin-top: 40px; font-size: 13px; color: #4b5563; }\n    .sign { margin-top: 60px; text-align: right; }\n    .small { font-size: 12px; color: #6b7280; }\n  </style>\n</head>\n<body>\n  <div class=\"page\">\n    <div class=\"topline\">\n      <div class=\"org\">\n        <strong>${esc(universityName)}</strong><br />\n        Student Affairs Automation Demo\n      </div>\n      <div class=\"meta\">\n        Tarih: ${esc(issueDate)}<br />\n        Belge No: ${esc(requestId)}\n      </div>\n    </div>\n\n    <div class=\"title\">${esc(title)}</div>\n\n    <div class=\"box\">\n      <strong>Öğrenci Adı:</strong> ${esc(student.fullName)}<br />\n      <strong>Öğrenci No:</strong> ${esc(student.studentNo)}<br />\n      <strong>Program:</strong> ${esc(program.programName)}<br />\n      <strong>Fakülte:</strong> ${esc(program.facultyName)}<br />\n      <strong>Statü:</strong> ${esc(student.status)}\n    </div>\n\n    <p>${esc(writer.purposeLine)}</p>\n    <p>${esc(writer.body)}</p>\n\n    <p><strong>Uygunluk Sonucu:</strong> ${esc($json.eligibility.reason)}</p>\n    <p><strong>Açık Veri Bağlamı:</strong> ${esc($json.universityContext.datasets.map(d => d.name).join(', '))}</p>\n\n    <div class=\"footer\">\n      <div>Doğrulama Referansı: ${esc(requestId)}</div>\n      <div class=\"small\">${esc(noteText)}</div>\n      <div class=\"small\">QC: ${esc(qcText)}</div>\n    </div>\n\n    <div class=\"sign\">\n      <strong>Student Affairs Office</strong><br />\n      <span class=\"small\">Prepared automatically by n8n + Ollama workflow</span>\n    </div>\n  </div>\n</body>\n</html>\n`.trim();\n\nconst plainTextDocument = [\n  title,\n  '',\n  `Tarih: ${issueDate}`,\n  `Belge No: ${requestId}`,\n  '',\n  `Öğrenci Adı: ${student.fullName}`,\n  `Öğrenci No: ${student.studentNo}`,\n  `Program: ${program.programName}`,\n  `Fakülte: ${program.facultyName}`,\n  '',\n  writer.purposeLine,\n  writer.body,\n  '',\n  `Uygunluk Sonucu: ${$json.eligibility.reason}`,\n  `QC: ${qcText}`,\n  `Doğrulama Referansı: ${requestId}`,\n  noteText\n].join('\\n');\n\nconst fileName = `${$json.agent_intake.documentType}_${student.studentNo || 'unknown'}_${requestId}.html`;\n\nreturn [{\n  json: {\n    ...$json,\n    htmlDocument,\n    plainTextDocument,\n    fileName\n  }\n}];"
+      },
+      "id": "bd0b523d-f254-4REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "HTML Composer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8864,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "htmlDocument",
+        "options": {
+          "fileName": "={{ $json.fileName }}"
+        }
+      },
+      "id": "766REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        9008,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'completed',\n    requestId: $json.requestId || 'unknown',\n    university: $json.universityContext?.universityName || 'Concordia University',\n    model: $json.ollama?.model || 'qwen2.5:3b-instruct',\n    documentType: $json.agent_intake?.documentType || 'unknown',\n    documentLabel: $json.eligibility?.statusLabel || 'completed',\n    studentNo: $json.student?.studentNo || 'unknown',\n    studentName: $json.student?.fullName || 'unknown',\n    eligibility: $json.eligibility || {},\n    message: 'Belge başarıyla oluşturuldu.'\n  }\n}];"
+      },
+      "id": "43490269-9076-43f1-aa0c-7a994f4d932d",
+      "name": "Result Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9152,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.ollama.baseUrl + '/api/generate' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.writerPayload) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "a2cff8b5-448REPLACE_WITH_GOOGLE_SHEET_ID",
+      "name": "Ollama Document Writer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        8032,
+        272
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Demo Request": {
+      "main": [
+        [
+          {
+            "node": "Ollama Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Config": {
+      "main": [
+        [
+          {
+            "node": "Build Intake Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Intake Payload": {
+      "main": [
+        [
+          {
+            "node": "Ollama Intake Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Intake Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Intake JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Intake JSON": {
+      "main": [
+        [
+          {
+            "node": "Demo Student Registry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demo Student Registry": {
+      "main": [
+        [
+          {
+            "node": "Open Data Context Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open Data Context Agent": {
+      "main": [
+        [
+          {
+            "node": "Eligibility Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eligibility Agent": {
+      "main": [
+        [
+          {
+            "node": "Build Writer Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Writer Payload": {
+      "main": [
+        [
+          {
+            "node": "Ollama Document Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Writer JSON": {
+      "main": [
+        [
+          {
+            "node": "Build QC Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build QC Payload": {
+      "main": [
+        [
+          {
+            "node": "Ollama QC Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama QC Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse QC JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse QC JSON": {
+      "main": [
+        [
+          {
+            "node": "HTML Composer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Composer": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Result Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Demo Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Document Writer": {
+      "main": [
+        [
+          {
+            "node": "Parse Writer JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {},
+  "tags": []
+}
